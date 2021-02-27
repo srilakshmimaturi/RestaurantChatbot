@@ -6,6 +6,8 @@ from rasa_sdk import Action
 from rasa_sdk.events import SlotSet
 import pandas as pd
 import json
+from email_config import Config
+from flask_mail_check import send_email
 
 ZomatoData = pd.read_csv('zomato.csv')
 ZomatoData = ZomatoData.drop_duplicates().reset_index(drop=True)
@@ -38,7 +40,14 @@ class ActionSearchRestaurants(Action):
 		cuisine = tracker.get_slot('cuisine')
 		price = tracker.get_slot('price')
 
+		global restaurants
+		
+
+		
 		results = RestaurantSearch(City=loc,Cuisine=cuisine,Price=price)
+		restaurants = results
+		restaurants.drop_duplicates(inplace = True)
+
 		response=""
 		if results.shape[0] == 0:
 			response= "no results"
@@ -50,6 +59,21 @@ class ActionSearchRestaurants(Action):
 				
 		dispatcher.utter_message("-----"+response)
 		return [SlotSet('location',loc)]
+
+
+class SendMail(Action):
+	def name(self):
+		return 'email_restaurant_details'
+		
+	def run(self, dispatcher, tracker, domain):
+		recipient = tracker.get_slot('email')
+
+		top10 = restaurants.head(10)
+		print("got this correct")
+		print(recipient)
+		send_email(recipient, top10)
+
+		dispatcher.utter_message("Have a great day!")
 
 class Check_Location(Action):
 	def name(self):

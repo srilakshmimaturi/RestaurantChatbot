@@ -15,6 +15,12 @@
 * restaurant_search{"price": "between 300 to 700"}
     - slot{"price": "between 300 to 700"}
     - action_search_restaurants
+    - utter_ask_whethermail
+* affirm
+    - utter_ask_mail
+* affirm{"email": "aiana.goyal@upgrad.com"}
+    - slot{"email": "aiana.goyal@upgrad.com"}
+    - email_restaurant_details
 
 ## another path
 * greet
@@ -35,6 +41,12 @@
 * restaurant_search{"price": "more than 700"}
     - slot{"price": "more than 700"}
     - action_search_restaurants 
+    - utter_ask_whethermail
+* affirm
+    - utter_ask_mail
+* affirm{"email": "aiana.goyal@upgrad.com"}
+    - slot{"email": "aiana.goyal@upgrad.com"}
+    - email_restaurant_details
 
 
 

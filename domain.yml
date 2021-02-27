@@ -12,6 +12,8 @@ entities:
 slots:
   cuisine:
     type: text
+  email:
+    type: text
   location:
     type: text
   location_found:
@@ -52,6 +54,9 @@ responses:
   - text: In what location?
   utter_default:
   - text: i cannot understand
+  utter_ask_mail:
+  - text: To what email address should I send the restaurant details
+  - text: Share the recipient email address
   utter_goodbye:
   - text: goodbye :(
   - text: Bye-bye
@@ -59,12 +64,17 @@ responses:
   - text: hey there! How may i help you
   utter_say_notOperate:
   - text: We do not operate in that area yet
+  utter_ask_whethermail:
+  - text: Should I mail you all the details
 actions:
 - action_search_restaurants
 - action_check_location
+- email_restaurant_details
 - utter_ask_cuisine
 - utter_ask_howcanhelp
+- utter_ask_whethermail
 - utter_ask_location
 - utter_default
 - utter_goodbye
 - utter_greet
+- utter_ask_mail
