@@ -3,9 +3,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from rasa_sdk import Action
-from rasa_sdk.events import SlotSet
 import pandas as pd
 import json
+from email_config import Config
+from flask_mail_check import send_email
+from rasa_sdk.events import AllSlotsReset, SlotSet, Restarted
+
 
 ZomatoData = pd.read_csv('zomato.csv')
 ZomatoData = ZomatoData.drop_duplicates().reset_index(drop=True)
@@ -23,10 +26,11 @@ def RestaurantSearch(City,Cuisine,Price):
 	return TEMP[['Restaurant Name','Address','Average Cost for two','Aggregate rating']]
 
 def LocationSearch(City):
-	if City in ZomatoData['City'].values:
+	if City.lower() in ZomatoData['City'].str.lower().values:
 		return 'found'
 	else:
 		return 'notfound'
+
 
 class ActionSearchRestaurants(Action):
 	def name(self):
@@ -38,18 +42,40 @@ class ActionSearchRestaurants(Action):
 		cuisine = tracker.get_slot('cuisine')
 		price = tracker.get_slot('price')
 
+		global restaurants
+		
+
+		
 		results = RestaurantSearch(City=loc,Cuisine=cuisine,Price=price)
+		restaurants = results
+		restaurants.drop_duplicates(inplace = True)
+
 		response=""
-		if results.shape[0] == 0:
+		if results.shape[0] >= 0 and results.shape[0] <= 5:
 			response= "no results"
 			check_flag = 'true'
 		else:
-			for restaurant in RestaurantSearch(loc,cuisine,price).iloc[:5].iterrows():
+			for restaurant in (RestaurantSearch(loc,cuisine,price)).sort_values(by='Aggregate rating',ascending=False).iloc[:5].iterrows():
 				restaurant = restaurant[1]
-				response=response + F"Found {restaurant['Restaurant Name']} in {restaurant['Address']} rated {restaurant['Address']} with avg cost {restaurant['Average Cost for two']} \n\n"
+				response=response + F"Found {restaurant['Restaurant Name']} in {restaurant['Address']} rated {restaurant['Aggregate rating']} with avg cost {restaurant['Average Cost for two']} \n\n"
 				
 		dispatcher.utter_message("-----"+response)
 		return [SlotSet('location',loc)]
+
+
+class SendMail(Action):
+	def name(self):
+		return 'email_restaurant_details'
+		
+	def run(self, dispatcher, tracker, domain):
+		recipient = tracker.get_slot('email')
+
+		top10 = restaurants.head(10)
+		print("got this correct")
+		print(recipient)
+		send_email(recipient, top10)
+
+		dispatcher.utter_message("Have a great day!")
 
 class Check_Location(Action):
 	def name(self):
@@ -61,3 +87,19 @@ class Check_Location(Action):
 
 		dispatcher.utter_message("-----"+result)
 		return [SlotSet('location_found',result)]
+
+
+class ActionRestarted(Action): 	
+	def name(self):
+		return 'action_restart'
+
+	def run(self, dispatcher, tracker, domain):
+		return[Restarted()] 
+
+
+class ActionSlotReset(Action): 
+	def name(self): 
+		return 'action_slot_reset' 
+
+	def run(self, dispatcher, tracker, domain): 
+		return[AllSlotsReset()]

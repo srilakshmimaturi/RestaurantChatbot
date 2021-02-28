@@ -1365,8 +1365,6 @@
 - show me [italian](cuisine) restaurant in [delhi](location)
 - [between 300 to 700](price)
 
-## synonym:Delhi
-- ptnnseha
 
 ## synonym:bangalore
 - bengaluru
@@ -1389,7 +1387,7 @@
 - Chinese
 - Chines
 
-## synonym:delhi
+## synonym:New Delhi
 -  delhi
 - delhi
 - dilli
